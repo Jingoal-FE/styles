@@ -1,0 +1,82 @@
+//
+// Grid
+// -----------------------------------------------------------------------------
+//
+// ### Usage:
+// Flexible grid layout inspired by Jeet.
+// Use `.make-row()` to create rows and use `.make-column()` to create columns.
+//
+@import "variables.scss";
+@import "util.scss";
+
+// All values are defaults and can therefore be easily overidden.
+// Jeet's default gutter value as a percentage.
+// @type Number
+$grid-gutter: 3 !default;
+
+// Jeet's variable for setting the calling order when using nested columns
+// sizes, prioritizing the parent instead of the child.
+// @type Bool
+$grid-parent-first: false !default;
+
+// grid's default layout direction.
+// @type String
+$grid-layout-direction: "LTR" !default;
+
+// 创建栅格外部容器
+@mixin make-row() {
+    @include clearfix();
+}
+
+// Style an element as a column with a gutter.
+// @param {Number} $ratios [1] - A width relative to its container as a fraction.
+// @param {Number} $offset [0] - A offset specified as a fraction.
+// @param {Number} $cycle [0] - Easily create an nth column grid where $cycle equals the number of columns.
+// @param {Number} $gutter [$jeet-gutter] - Specify the gutter width as a percentage of the containers width.
+@mixin make-column($ratios: 1, $offset: 0, $cycle: 0, $gutter: $grid-gutter) {
+    $side: left;
+    $opposite-side: right;
+    $column-widths: grid-get-column($ratios, $gutter);
+    $margin-last: 0;
+    $margin-l: $margin-last;
+    $margin-r: nth($column-widths, 2);
+    @if $offset !=0 {
+        @if $offset < 0 {
+            $offset: $offset * -1;
+            $offset: nth(grid-get-column($offset, nth($column-widths, 2)), 1);
+            $margin-last: $offset + nth($column-widths, 2) * 2;
+            $margin-r: $margin-last;
+        }
+        @else {
+            $offset: nth(grid-get-column($offset, nth($column-widths, 2)), 1);
+            $margin-l: $offset + nth($column-widths, 2);
+        }
+    }
+    float: $side;
+    clear: none;
+    width: grid-get-percentage(nth($column-widths, 1));
+    margin: {
+        #{$side}: grid-get-percentage($margin-l);
+        #{$opposite-side}: grid-get-percentage($margin-r);
+    }
+    ;
+    @if $cycle !=0 {
+        &:nth-of-type(n) {
+            margin-#{opposite-direction($side)}: grid-get-percentage($margin-r);
+            float: $side;
+            clear: none;
+        }
+        &:nth-of-type(#{$cycle}n) {
+            margin-#{opposite-direction($side)}: grid-get-percentage($margin-last);
+            float: opposite-direction($side);
+        }
+        &:nth-of-type(#{$cycle}n + 1) {
+            clear: both;
+        }
+    }
+    @else {
+        &:last-child {
+            margin-#{opposite-direction($side)}: grid-get-percentage($margin-last);
+        }
+    }
+}

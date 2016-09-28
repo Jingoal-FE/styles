@@ -1,0 +1,72 @@
+//
+// Effects
+// -----------------------------------------------------------------------------
+//
+// ### Usage:
+// 提供各种视觉效果的封装。
+//
+// @import "variables.scss";
+// @import "compatibility.scss";
+// @import "util.scss";
+// ## 文字效果
+//
+// 文字浮凸效果
+@mixin embossed-text($bg-color, $fg-color:false) {
+    @if($fg-color) {
+        color: $fg-color;
+    }
+    @else {
+        color: lighten($bg-color, 3%);
+    }
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5), 0 -1px 0 rgba(255, 255, 255, 0.5);
+}
+
+//
+// 文字下陷效果
+@mixin debossed-text($bg-color, $fg-color:false) {
+    @if($fg-color) {
+        $color: darken($fg-color, 3%);
+    }
+    @else {
+        color: darken($bg-color, 3%);
+    }
+    color: rgba(red($color), green($color), blue($color), 0.8);
+    text-shadow: 0 1px 1px $bg-color, 0 0 0 #000, 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+// 文字3d效果
+@mixin threeD-text {
+    color: $color;
+    text-shadow: 0 1px 0 $color - #272727,
+                 0 2px 0 $color - #303030,
+                 0 3px 0 $color - #393939,
+                 0 4px 0 $color - #424242,
+                 0 5px 0 $color - #5b5b5b,
+                 0 6px 1px rgba(0, 0, 0, 0.1),
+                 0 0 5px rgba(0, 0, 0, 0.1),
+                 1px 1px 3px rgba(0, 0, 0, 0.3),
+                 3px 3px 5px rgba(0, 0, 0, 0.2),
+                 5px 5px 10px rgba(0, 0, 0, 0.25),
+                 0 10px 10px rgba(0, 0, 0, 0.2),
+                 0 20px 20px rgba(0, 0, 0, 0.15);
+}
+
+//
+// 文本发光效果
+@mixin glow-text($radius:5px, $color:false){
+    @if $color and iscolor($color) and isnumber($radius){
+        text-shadow: 0 0 $radius $color;
+    }@else{
+        @if isnumber($raius){
+            text-shadow: 0 0 $radius;
+        }
+    }
+}
+
+//
+// 文本模糊效果
+@mixin blurry-text($color, $radius: 0.15em) {
+    color: transparent;
+    text-shadow: 0 0 $radius $color;
+    // 0.1px of spread distance made the shadow visible under IE10
+    text-shadow: 0 0 $radius 0.1px $color;
+}

@@ -1,0 +1,305 @@
+//
+// Util
+// -----------------------------------------------------------------------------
+//
+// ### Usage:
+// Common utilities.
+//
+// ### Example:
+// .some-floats-inside {
+//     @include clearfix();
+// };
+@import "variables.scss";
+// clearfix via http://h5bp.com/q
+@mixin clearfix() {
+    &:before,
+    &:after {
+        display: table;
+        content: "";
+    }
+    &:after {
+        clear: both;
+    }
+    @if ($support-ie-version < 8) {
+        *zoom: 1;
+    }
+}
+
+// size settings
+@mixin size($width, $height:false) {
+    @if($height) {
+        height: $height;
+    }
+    @else {
+        height: $width;
+    }
+    width: $width;
+}
+
+//
+// no-bullet
+// no-bullets
+//
+// "Unstyle" lists, `@include no-bullet()` for `<li>`s and `@include no-bullets()` for `<ul>` & `<ol>`
+// [deprecated]
+@mixin no-bullet() {
+    list-style-image: none;
+    list-style-type: none;
+    margin-left: 0;
+}
+
+@mixin no-bullets() {
+    list-style: none;
+    li {
+        @include no-bullet();
+    }
+}
+
+//
+// .margin-em
+// .margin-top-em
+// .margin-bottom-em
+// .margin-left-em
+// .margin-right-em
+// .padding-em
+// .padding-top-em
+// .padding-bottom-em
+// .padding-left-em
+// .padding-right-em
+//
+// Helps calculating `margin` and `padding` in `em`.
+// 不能带单位
+@mixin margin-em($px-size, $content-px-size: $default-font-size) {
+    $len: length($px-size);
+    $top: nth($px-size, 1);
+    $right: $top;
+    $bottom: $top;
+    $left: $top;
+    @if($len==2) {
+        $top: nth($px-size, 1);
+        $right: nth($px-size, 2);
+        $left: $right;
+    }
+    @else if($len==3) {
+        $top: nth($px-size, 1);
+        $right: nth($px-size, 2);
+        $bottom: nth($px-size, 3);
+        $left: $right;
+    }
+    @else if($len==4) {
+        $top: nth($px-size, 1);
+        $right: nth($px-size, 2);
+        $bottom: nth($px-size, 3);
+        $left: nth($px-size, 4);
+    }
+    $margin: $top / $content-px-size*1em;
+    @if not($right==$top) {
+        $margin: $top / $content-px-size*1em $right /$content-px-size*1em;
+    }
+    @if not ($bottom==$top) {
+        $margin: $top / $content-px-size*1em $right / $content-px-size*1em $bottom / $content-px-size*1em;
+    }
+    @if not ($left==$right) {
+        $margin: $top / $content-px-size*1em $right / $content-px-size*1em $bottom / $content-px-size*1em $left / $content-px-size*1em;
+    }
+    margin:$margin;
+}
+
+@mixin margin-top-em($px-size, $content-px-size: $default-font-size) {
+    margin-top: $px-size / $content-px-size * 1em;
+}
+
+@mixin margin-bottom-em($px-size, $content-px-size: $default-font-size) {
+    margin-bottom: $px-size / $content-px-size * 1em;
+}
+
+@mixin margin-left-em($px-size, $content-px-size: $default-font-size) {
+    margin-left: $px-size / $content-px-size * 1em;
+}
+
+@mixin margin-right-em($px-size, $content-px-size: $default-font-size) {
+    margin-right: $px-size / $content-px-size * 1em;
+}
+
+@mixin padding-em($px-size, $content-px-size: $default-font-size) {
+    $len: length($px-size);
+    $top: nth($px-size, 1);
+    $right: $top;
+    $bottom: $top;
+    $left: $top;
+    @if($len==2) {
+        $top: nth($px-size, 1);
+        $right: nth($px-size, 2);
+        $left: $right;
+    }
+    @else if($len==3) {
+        $top: nth($px-size, 1);
+        $right: nth($px-size, 2);
+        $bottom: nth($px-size, 3);
+        $left: $right;
+    }
+    @else if($len==4) {
+        $top: nth($px-size, 1);
+        $right: nth($px-size, 2);
+        $bottom: nth($px-size, 3);
+        $left: nth($px-size, 4);
+    }
+    $padding: $top / $content-px-size*1em;
+    @if not($right==$top) {
+        $padding: $top / $content-px-size*1em $right /$content-px-size*1em;
+    }
+    @if not ($bottom==$top) {
+        $padding: $top / $content-px-size*1em $right / $content-px-size*1em $bottom / $content-px-size*1em;
+    }
+    @if not ($left==$right) {
+        $padding: $top / $content-px-size*1em $right / $content-px-size*1em $bottom / $content-px-size*1em $left / $content-px-size*1em;
+    }
+    padding:$padding;
+}
+
+@mixin padding-top-em($px-size, $content-px-size: $default-font-size) {
+    padding-top: $px-size / $content-px-size * 1em;
+}
+
+@mixin padding-bottom-em($px-size, $content-px-size: $default-font-size) {
+    padding-bottom: $px-size / $content-px-size * 1em;
+}
+
+@mixin padding-left-em($px-size, $content-px-size: $default-font-size) {
+    padding-left: $px-size / $content-px-size * 1em;
+}
+
+@mixin padding-right-em($px-size, $content-px-size: $default-font-size) {
+    padding-right: $px-size / $content-px-size * 1em;
+}
+
+//
+// .margin-rem
+// .margin-top-rem
+// .margin-bottom-rem
+// .margin-left-rem
+// .margin-right-rem
+// .padding-rem
+// .padding-top-rem
+// .padding-bottom-rem
+// .padding-left-rem
+// .padding-right-rem
+//
+// Helps calculating `margin` and `padding` in `rem`.
+@mixin margin-rem($px-size) {
+    $len: length($px-size);
+    $top: nth($px-size, 1);
+    $right: $top;
+    $bottom: $top;
+    $left: $top;
+    @if($len==2) {
+        $top: nth($px-size, 1);
+        $right: nth($px-size, 2);
+        $left: $right;
+    }
+    @else if($len==3) {
+        $top: nth($px-size, 1);
+        $right: nth($px-size, 2);
+        $bottom: nth($px-size, 3);
+        $left: $right;
+    }
+    @else if($len==4) {
+        $top: nth($px-size, 1);
+        $right: nth($px-size, 2);
+        $bottom: nth($px-size, 3);
+        $left: nth($px-size, 4);
+    }
+    $rem: $top / $default-font-size*1rem;
+    $px: $top / $content-px-size*1px;
+
+    @if not($right==$top) {
+        $px: $top*1px $right*1px;
+        $rem: $top / $default-font-size*1rem $right /$default-font-size*1rem;
+    }
+    @if not ($bottom==$top) {
+        $px: $top*1px $right*1px $bottom*1px;
+        $rem: $top / $default-font-size*1rem $right / $default-font-size*1rem $bottom / $default-font-size*1rem;
+    }
+    @if not ($left==$right) {
+        $px: $top*1px $right*1px $bottom*1px $left*1px;
+        $rem: $top / $default-font-size*1rem $right / $default-font-size*1rem $bottom / $default-font-size*1rem $left / $content-px-size*1em;
+    }
+    margin:$rem;
+    margin:$px;
+}
+
+@mixin margin-top-rem($px-size) {
+    margin-top: $px-size*1px;
+    margin-top: $px-size / $default-font-size*1rem;
+}
+@mixin margin-bottom-rem($px-size) {
+    margin-bottom: $px-size*1px;
+    margin-bottom: $px-size / $default-font-size*1rem;
+}
+@mixin margin-left-rem($px-size) {
+    margin-left: $px-size*1px;
+    margin-left: $px-size / $default-font-size*1rem;
+}
+@mixin margin-right-rem($px-size) {
+    margin-right: $px-size*1px;
+    margin-right: $px-size / $default-font-size*1rem;
+}
+
+@mixin padding-rem($px-size) {
+    $len: length($px-size);
+    $top: nth($px-size, 1);
+    $right: $top;
+    $bottom: $top;
+    $left: $top;
+    @if($len==2) {
+        $top: nth($px-size, 1);
+        $right: nth($px-size, 2);
+        $left: $right;
+    }
+    @else if($len==3) {
+        $top: nth($px-size, 1);
+        $right: nth($px-size, 2);
+        $bottom: nth($px-size, 3);
+        $left: $right;
+    }
+    @else if($len==4) {
+        $top: nth($px-size, 1);
+        $right: nth($px-size, 2);
+        $bottom: nth($px-size, 3);
+        $left: nth($px-size, 4);
+    }
+    $rem: $top / $default-font-size*1rem;
+    $px: $top / $content-px-size*1px;
+
+    @if not($right==$top) {
+        $px: $top*1px $right*1px;
+        $rem: $top / $default-font-size*1rem $right /$default-font-size*1rem;
+    }
+    @if not ($bottom==$top) {
+        $px: $top*1px $right*1px $bottom*1px;
+        $rem: $top / $default-font-size*1rem $right / $default-font-size*1rem $bottom / $default-font-size*1rem;
+    }
+    @if not ($left==$right) {
+        $px: $top*1px $right*1px $bottom*1px $left*1px;
+        $rem: $top / $default-font-size*1rem $right / $default-font-size*1rem $bottom / $default-font-size*1rem $left / $content-px-size*1em;
+    }
+    padding:$rem;
+    padding:$px;
+}
+@mixin padding-top-rem($px-size) {
+    padding-top: $px-size*1px;
+    padding-top: $px-size / $default-font-size*1rem;
+}
+@mixin padding-bottom-rem($px-size) {
+    padding-bottom: $px-size*1px;
+    padding-bottom: $px-size / $default-font-size*1rem;
+}
+@mixin padding-left-rem($px-size) {
+    padding-left: $px-size*1px;
+    padding-left: $px-size / $default-font-size*1rem;
+}
+@mixin padding-right-rem($px-size) {
+    padding-right: $px-size*1px;
+    padding-right: $px-size / $default-font-size*1rem;
+}
+

@@ -1,0 +1,358 @@
+//
+// Typography
+// -----------------------------------------------------------------------------
+//
+// ### Usage:
+// 提供文本相关的mixin样式。
+@import "variables.scss";
+@import "util.scss";
+// IE7-下，匹配到第一个字体后不会根据字符继续在family列表中进行fallback
+@mixin font-family($type) {
+    @if($type==base) {
+        font-family: $default-base-font-family;
+        @if($support-ie-version < 8) and ($default-base-font-family==$default-old-ie-base-font-family) {
+            *font-family: $default-old-ie-base-font-family;
+        }
+    }
+    @else if($type==heading) {
+        font-family: $default-heading-font-family;
+        @if($support-ie-version < 8) and ($default-base-font-family==$default-old-ie-base-font-family) {
+            *font-family: $default-old-ie-heading-font-family;
+        }
+    }
+    @else if($type==code) {
+        font-family: $default-code-font-family;
+        @if($support-ie-version < 8) and ($default-base-font-family==$default-old-ie-base-font-family) {
+            *font-family: $default-old-ie-code-font-family;
+        }
+    }
+}
+
+//
+// .ellipsis
+//
+// Known issue:
+// 指定参数（行数）的功能只支持WebKit。
+@mixin ellipsis($line-number:false) {
+    overflow: hidden;
+    @if($line-number) {
+        display: -webkit-box;
+        -webkit-line-clamp: $line-number;
+        -webkit-box-orient: vertical;
+    }
+    @else {
+        text-overflow: ellipsis;
+        -o-text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
+//
+// force-wrap
+//
+// 阻止长字符串（例如url或无意义连续英文字符）打破布局
+@mixin force-wrap() {
+    white-space: pre; // CSS 2.0
+    white-space: pre-wrap; // CSS 2.1
+    white-space: pre-line; // CSS 3.0
+    white-space: -pre-wrap; // Opera 4-6
+    white-space: -o-pre-wrap; // Opera 7
+    white-space: -moz-pre-wrap; // Mozilla
+    white-space: -hp-pre-wrap; // HP Printers
+    word-wrap: break-word; // IE 5+
+}
+
+//
+// .hide-text
+//
+// 隐藏文字
+// http://jsfiddle.net/necolas/drHaR/2/
+// https://github.com/twitter/bootstrap/issues/2362
+// https://github.com/h5bp/html5-boilerplate/commit/aa0396eae757c9e03dda4e463fb0d4db5a5f82d7#commitcomment-1052728
+// http://www.zeldman.com/2012/03/01/replacing-the-9999px-hack-new-image-replacement/
+@mixin hide-text() {
+    @if($support-ie-version < 8) {
+        @include ie-hide-text();
+    }
+    @else {
+        white-space: nowrap;
+        text-indent: 100%;
+        overflow: hidden;
+    }
+}
+
+// ie6, ie7
+@mixin ie-hide-text() {
+    text-indent: -9999px;
+    overflow: hidden;
+    text-align: left;
+}
+
+//
+// .invisible
+//
+// 用于隐藏那些增加可访问性的文字，注意与hide-text的区别是，他隐藏整个元素
+@mixin invisible() {
+    position: absolute !important;
+    height: 1px;
+    width: 1px;
+    overflow: hidden;
+    clip: rect(1px, 1px, 1px, 1px);
+    @if($support-ie-version < 8) {
+        *clip: rect(1px 1px 1px 1px);
+    }
+}
+
+//
+// .img-replace
+// .ir
+// 用图片替换文字，通常用作icon的样式
+@mixin img-replace($img-url, $img-x: 0, $img-y:0) {
+    @include hide-text();
+    $url: $image-path + $img-url;
+    background: url($url) no-repeat $img-x $img-y;
+}
+
+@mixin ir($img-url, $img-x: 0, $img-y:0) {
+    @include img-replace($img-url, $img-x, $img-y);
+}
+
+//
+// .font-size-rem(14)
+// .font-size-em(14)
+// .font-size-em(14, 18)
+//
+// 用于辅助计算字体的em和rem值
+// 只能传入整数值
+// https://github.com/clearleft/clearless/blob/master/mixins/typography.less
+@mixin font-size-rem($px-size) {
+    $rem-size: $px-size / $default-font-size;
+    font-size: $px-size * 1px;
+    font-size: $rem-size * 1rem;
+}
+
+// 目前传入传入整数值，不能加单位
+@mixin font-size-em($target-px-size, $context-px-size: $default-font-size) {
+    font-size: $target-px-size / $context-px-size * 1em;
+}
+
+//
+// .font-face
+//
+// @font-face的快捷书写方式
+// https://github.com/clearleft/clearless/blob/master/mixins/typography.less
+// Cross-browser support for @font-face. Supports IE, Gecko, Webkit, Opera.
+//
+// * $name is required, arbitrary, and what you will use in font stacks.
+// * $font-files is required using font-files('relative/location', 'format').
+//   for best results use this order: woff, opentype/truetype, svg
+// * $eot is required by IE, and is a relative location of the eot file.
+// * $weight shows if the font is bold, defaults to normal
+// * $style defaults to normal, might be also italic
+// * For android 2.2 Compatiblity, please ensure that your web page has
+//   a meta viewport tag.
+// * To support iOS < 4.2, an SVG file must be provided
+//
+// If you need to generate other formats check out the Font Squirrel
+// [font generator](http://www.fontsquirrel.com/fontface/generator)
+//
+// In order to refer to a specific style of the font in your stylesheets as
+// e.g. "font-style: italic;",  you may add a couple of @font-face includes
+// containing the respective font files for each style and specying
+// respective the $style parameter.
+// Order of the includes matters, and it is: normal, bold, italic, bold+italic.
+@mixin font-face( $name, $font-files, $eot: false, $weight: normal, $style: normal, $include-svg: false) {
+    $iefont: unquote("#{$eot}?#iefix");
+    @font-face {
+        font-family: quote($name);
+        src: url(#{$font-files}.eot);
+        $url: $font-files;
+        $src: url(#{$url}.eot?#iefix) format("embedded-opentype"),
+        url(#{$url}.woff) format("woff"),
+        url(#{$url}.ttf) format("truetype");
+        @if $include-svg {
+            $src: #{$src},
+            url(#{$font-files}.svg##{$name}) format("svg");
+        }
+        src: $src;
+        font-weight: $weight;
+        font-style: $style;
+    }
+}
+
+//
+// .hover-link
+//
+// 实现链接默认无下划线，hover后有下划线的样式
+@mixin hover-link() {
+    text-decoration: none;
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+//
+// .unstyled-link
+//
+// 将链接变成默认的文字样式
+@mixin unstyled-link() {
+    color: inherit;
+    text-decoration: inherit;
+    cursor: inherit;
+    &:active,
+    &:focus {
+        outline: none;
+    }
+}
+
+//
+// font-size 必须是px单位
+// .rhythm(14px, 2);
+// .rhythm()
+// .rhythm(14px, 180%);
+// .rhythm(14px, 1.8em);
+// .rhythm(14px, 28px);
+//
+// 按照“垂直的旋律”来排版文字，适合中文阅读
+// 一般用于多段文字（文章）的显示
+// 基础高度(px) = 行高 / 2;
+@mixin rhythm($font-size:14px, $line-height: 1.8) {
+    font-size: $font-size;
+    line-height: $line-height;
+    $line: 0;
+    @if unit($line-height)=='' {
+        $line: $font-size * $line-height/ 2;
+    }
+    @else if unit($line-height)=='px' {
+        $line: $line-height / 2;
+    }
+    @else if unit($line-height)=='%' {
+        $line: strip-unit($line-height)/ 100 * $font-size/ 2;
+    }
+    @else if unit($line-height)=='em' {
+        $line: strip-unit($line-height) * $font-size / 2;
+    }
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    div,
+    p,
+    section,
+    header,
+    footer,
+    article,
+    ul,
+    ol,
+    pre,
+    table,
+    figure {
+        line-height: $line * 2;
+        margin-top: $line;
+        margin-bottom: $line;
+        padding: 0;
+    }
+    h1 {
+        line-height: $line * 2 * 2;
+    }
+    h1 {
+        font-size: $font-size * 2;
+    }
+    h2 {
+        font-size: $font-size * 1.5;
+    }
+    h3 {
+        font-size: $font-size * 1.2;
+    }
+    h4,
+    h5,
+    h6 {
+        font-size: $font-size;
+    }
+}
+
+//
+// 文字下沉
+// .drop-cap用于段落元素首字下沉，
+// .drop-cap-inline用于行内元素整个下沉
+// .drop-cap-inline(2)
+// .drop-cap-inline(32px)
+// .drop-cap-inline(2em)
+// .drop-cap-inline(200%)
+// .drop-cap-inline(32px, 3)
+// .drop-cap-inline(2, 3, 10px)
+@mixin drop-cap-inline($context-line-height, $lines: false, $margin-right:false) {
+    @if $support-ie-version < 7 {
+        _display: inline;
+    }
+    @if $lines==false {
+        $lines: 2;
+    }
+    @else {
+        $lines: strip-unit($lines);
+    }
+    @if $margin-right==false {
+        $margin-right: 1em / $lines;
+    }
+    float: left;
+    margin-right: $margin-right;
+    font-size: $lines * 1em;
+    @if unit($context-line-height)=='px' {
+        line-height: $context-line-height * $lines;
+    }
+    @else {
+        line-height: $context-line-height;
+    }
+}
+
+//
+// 文字下沉
+// .drop-cap用于段落元素首字下沉，
+// .drop-cap(2)
+// .drop-cap(32px)
+// .drop-cap(2em)
+// .drop-cap(200%)
+// .drop-cap(2, 3)
+// .drop-cap(2, 3, 10px)
+//
+@mixin drop-cap($line-height, $lines: false, $margin-right: false) {
+    @if $support-ie-version < 7 {
+        _zoom: 1;
+    }
+    @if $lines==false {
+        $lines: 2;
+    }
+    @else {
+        $lines: strip-unit($lines);
+    }
+    @if $margin-right==false {
+        $margin-right: 1em / $lines;
+    }
+    &:first-letter {
+        @include drop-cap-inline($line-height, $lines, $margin-right);
+    }
+}
+
+
+//
+// 单行文本的垂直居中
+// .centered-line(30px)
+// .centered-line(30px, true)
+// WebKit 下文本输入框中的文字会自动垂直居中，如果设置了 line-height 反而会使光标、选区的高度显示不正常。
+@mixin centered-line($height, $is-input:false) {
+    @if not $is-input {
+        height: $height;
+        line-height: $height;
+    }
+    @else {
+        @if $support-ie-version < 9 {
+            height: $height;
+            line-height: $height \0; // ie6-8
+        }
+        @else {
+            height: $height;
+        }
+    }
+}

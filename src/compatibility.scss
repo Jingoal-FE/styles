@@ -1,0 +1,934 @@
+//
+// Compatibility
+// -----------------------------------------------------------------------------
+//
+// ### Usage:
+// Used to resolve common compatibility issues.
+// Use Autoprefixer to handle vendor prefixes.
+// Related mixins are preserved for backward compatibility.
+@import "variables.scss";
+@import '_functions.scss';
+@mixin inline-block() {
+    display: inline-block;
+    @if $support-old-ie {
+        @include ie-inline-block;
+    }
+}
+
+@mixin ie-inline-block() {
+    *display: inline;
+    *zoom: 1;
+}
+
+//
+// Box sizing
+@mixin box-sizing($boxmodel) {
+    @if not $use-autoprefixer {
+        -webkit-box-sizing: $boxmodel;
+        -moz-box-sizing: $boxmodel;
+    }
+    box-sizing: $boxmodel;
+}
+
+//
+// Reference:
+// * http://css-tricks.com/snippets/css/style-placeholder-text/
+// * https://bugzilla.mozilla.org/show_bug.cgi?id=737786
+//
+// Known issue:
+// Not supported for IE9-
+
+/* 调用方式传入颜色值：
+     @include placeholder (#f60); 
+   若需要加入其他的属性则，没有传入颜色则默认为 $default-input-placeholder-color：
+     @include placeholder (#f60) {
+        font-style: italic;
+        font-weight: bold;
+    };
+*/
+
+// 若有content自会输出，没有则不输出任何内容
+@mixin placeholder($style: $default-input-placeholder-color) {
+    @if $use-autoprefixer {
+        @if type_of($style)==color {
+            &::placeholder {
+                color: $style;
+                @content;
+            }
+        }
+        @else {
+            &::placeholder {
+                @content;
+            }
+        }
+    }
+    @else {
+        // 若有content自会输出，没有则不输出任何内容
+        @if type_of($style)==color {
+            &::-webkit-input-placeholder {
+                color: $style;
+                @content;
+            }
+            &:-moz-placeholder {
+                color: $style;
+                @content;
+            }
+            &::-moz-placeholder {
+                color: $style;
+                @content;
+            }
+            &:-ms-input-placeholder {
+                color: $style;
+                @content;
+            }
+        }
+        @else {
+            &::-webkit-input-placeholder {
+                @content;
+            }
+            &:-moz-placeholder {
+                @content;
+            }
+            &::-moz-placeholder {
+                @content;
+            }
+            &:-ms-input-placeholder {
+                @content;
+            }
+        }
+    }
+}
+
+//
+// Known issue:
+// Not supported for Opera 14-
+@mixin user-select($type) {
+    @if not $use-autoprefixer {
+        -webkit-user-select: $type;
+        -moz-user-select: $type;
+        -ms-user-select: $type;
+    }
+    user-select: $type;
+}
+
+// Opacity
+// In IE9, when `opacity` is set, alpha filter will be ignored
+// $opacity:可取0-1或1-100;
+@mixin opacity($opacity: 1) {
+    @if $opacity > 1 {
+        $opacity: $opacity * 0.01;
+    }
+    @if $support-ie-version < 9 {
+        $op: $opacity * 100;
+        filter: "alpha(opacity=#{$op})";
+    }
+    opacity: $opacity;
+}
+
+// Single background with RGBA color
+// $rgba:RGBA 格式色值。
+// @vicky: rgba-background(@color, @opacity)
+@mixin rgba-background($rgba) {
+    @if $support-ie-version < 9 {
+        // prevent click through in IE 8 using a transparent background image
+        background: url(data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7) repeat\0;
+        $argb: ie-hex-str($rgba);
+        filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#{$argb}, endColorstr=#{$argb})\0;
+        zoom: 1\0;
+        background: $rgba;
+        // hack for IE9 to prevent applying rgba and filter at the same time
+        :root & {
+            filter: none\9;
+        }
+    }
+    @else {
+        background: $rgba;
+    }
+}
+
+// Border Radius
+// all
+@mixin border-radius($radius: $default-border-radius, $vertical-radius: false) {
+    @if($vertical-radius) {
+        $radius: #{$radius} / #{$vertical-radius};
+    }
+    @if($use-autoprefixer) {
+        border-radius: $radius;
+    }
+    @else {
+        -webkit-border-radius: $radius;
+        -moz-border-radius: $radius;
+        border-radius: $radius;
+    }
+}
+
+// top left
+@mixin border-top-left-radius($radius, $vertical-radius:false) {
+    @if($vertical-radius) {
+        $radius: #{$radius} / #{$vertical-radius};
+    }
+    @if($use-autoprefixer) {
+        border-top-left-radius: $radius;
+    }
+    @else {
+        -webkit-border-top-left-radius: $radius;
+        -moz-border-radius-topleft: $radius;
+        border-top-left-radius: $radius;
+    }
+}
+
+// top right
+@mixin border-top-right-radius($radius, $vertical-radius:false) {
+    @if($vertical-radius) {
+        $radius: #{$radius} / #{$vertical-radius};
+    }
+    @if($use-autoprefixer) {
+        border-top-right-radius: $radius;
+    }
+    @else {
+        -webkit-border-top-right-radius: $radius;
+        -moz-border-radius-topright: $radius;
+        border-top-right-radius: $radius;
+    }
+}
+
+// bottom right
+@mixin border-bottom-right-radius($radius, $vertical-radius:false) {
+    @if($vertical-radius) {
+        $radius: #{$radius} / #{$vertical-radius};
+    }
+    @if($use-autoprefixer) {
+        border-bottom-right-radius: $radius;
+    }
+    @else {
+        -webkit-border-bottom-right-radius: $radius;
+        -moz-border-radius-bottomright: $radius;
+        border-bottom-right-radius: $radius;
+    }
+}
+
+// bottom left
+@mixin border-bottom-left-radius($radius, $vertical-radius:false) {
+    @if($vertical-radius) {
+        $radius: #{$radius} / #{$vertical-radius};
+    }
+    @if($use-autoprefixer) {
+        border-bottom-left-radius: $radius;
+    }
+    @else {
+        -webkit-border-bottom-left-radius: $radius;
+        -moz-border-radius-bottomleft: $radius;
+        border-bottom-left-radius: $radius;
+    }
+}
+
+// top
+@mixin border-top-radius($radius, $vertical-radius) {
+    @include border-top-left-radius($radius, $vertical-radius);
+    @include border-top-right-radius($radius, $vertical-radius);
+}
+
+// right
+@mixin border-right-radius($radius, $vertical-radius) {
+    @include border-top-right-radius($radius, $vertical-radius);
+    @include border-bottom-right-radius($radius, $vertical-radius);
+}
+
+// bottom
+@mixin border-right-radius($radius, $vertical-radius) {
+    @include border-bottom-left-radius($radius, $vertical-radius);
+    @include border-bottom-right-radius($radius, $vertical-radius);
+}
+
+// left
+@mixin border-left-radius($radius, $vertical-radius) {
+    @include border-top-left-radius($radius, $vertical-radius);
+    @include border-bottom-right-radius($radius, $vertical-radius);
+}
+
+//
+// Drop shadows
+// $shadows 单个阴影参数。可选，默认值：$default-box-shadow。
+@mixin box-shadow($shadows...) {
+    $shadows: set-arglist-default($shadows, $default-box-shadow);
+    @if($use-autoprefixer) {
+        -webkit-box-shadow: $shadows;
+        -moz-box-shadow: $shadows;
+        box-shadow: $shadows;
+    }
+    @else {
+        box-shadow: $shadows;
+    }
+}
+
+// Transitions
+// Reference:
+// * https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_animated_properties
+@mixin transition($transitions...) {
+    $transitions-with-delays: $transitions;
+    @if not ($use-autoprefixer) {
+        -webkit-transition: $transitions-with-delays;
+        -moz-transition: $transitions-with-delays;
+        -o-transition: $transitions-with-delays;
+    }
+    transition: $transitions-with-delays;
+}
+
+@mixin transition-property($properties...) {
+    @if not $use-autoprefixer {
+        -webkit-transition-property: $properties;
+        -moz-transition-property: $properties;
+        -o-transition-property: $properties;
+    }
+    transition-property: $properties;
+}
+
+@mixin transition-duration($durations...) {
+    @if not $use-autoprefixer {
+        -webkit-transition-duration: $durations;
+        -moz-transition-duration: $durations;
+        -o-transition-duration: $durations;
+    }
+    transition-duration: $durations;
+}
+
+@mixin timing-function($timing-function...) {
+    @if not $use-autoprefixer {
+        -webkit-transition-timing-function: $timing-function;
+        -moz-transition-timing-function: $timing-function;
+        -o-transition-timing-function: $timing-function;
+    }
+    transition-timing-function: $timing-function;
+}
+
+@mixin transition-delay($delays...) {
+    @if not $use-autoprefixer {
+        -webkit-transition-delay: $delays;
+        -moz-transition-delay: $delays;
+        -o-transition-delay: $delays;
+    }
+    transition-delay: $delays;
+}
+
+//
+// Animations
+//
+// Reference:
+// * https://developer.mozilla.org/en-US/docs/Web/CSS/animation
+@mixin animation($animations...) {
+    @if not $use-autoprefixer {
+        -webkit-animation: $animations;
+        -moz-animation: $animations;
+        -o-animation: $animations;
+    }
+    animation: $animations;
+}
+
+@mixin animation-name($names...) {
+    @if not $use-autoprefixer {
+        -webkit-animation-name: $names;
+        -moz-animation-name: $names;
+        -o-animation-name: $names;
+    }
+    animation-name: $names;
+}
+
+@mixin animation-duration($durations...) {
+    $durations: set-arglist-default($durations, 0s);
+    @if not $use-autoprefixer {
+        -webkit-animation-duration: $durations;
+        -moz-animation-duration: $durations;
+        -o-animation-duration: $durations;
+    }
+    animation-duration: $durations;
+}
+
+@mixin animation-timing-function($timing-functions...) {
+    @if not $use-autoprefixer {
+        -webkit-animation-timing-function: $timing-functions;
+        -moz-animation-timing-function: $timing-functions;
+        -o-animation-timing-function: $timing-functions;
+    }
+    animation-timing-function: $timing-functions;
+}
+
+@mixin animation-iteration-count($counts...) {
+    $counts: set-arglist-default($counts, 1);
+    @if not $use-autoprefixer {
+        -webkit-animation-iteration-count: $counts;
+        -moz-animation-iteration-count: $counts;
+        -o-animation-iteration-count: $counts;
+    }
+    animation-iteration-count: $counts;
+}
+
+@mixin animation-direction($directions...) {
+    $directions: set-arglist-default($directions, normal);
+    @if not $use-autoprefixer {
+        -webkit-animation-direction: $directions;
+        -moz-animation-direction: $directions;
+        -o-animation-direction: $directions;
+    }
+    animation-direction: $directions;
+}
+
+@mixin animation-play-state($states...) {
+    $states: set-arglist-default($states, running);
+    @if not $use-autoprefixer {
+        -webkit-animation-play-state: $states;
+        -moz-animation-play-state: $states;
+        -o-animation-play-state: $states;
+    }
+    animation-play-state: $states;
+}
+
+@mixin animation-delay($delays...) {
+    $delays: set-arglist-default($delays, 0s);
+    @if not $use-autoprefixer {
+        -webkit-animation-delay: $delays;
+        -moz-animation-delay: $delays;
+        -o-animation-delay: $delays;
+    }
+    animation-delay: $delays;
+}
+
+@mixin animation-fill-mode($modes...) {
+    $modes: set-arglist-default($modes, none);
+    @if not $use-autoprefixer {
+        -webkit-animation-fill-mode: $modes;
+        -moz-animation-fill-mode: $modes;
+        -o-animation-fill-mode: $modes;
+    }
+    animation-fill-mode: $modes;
+}
+
+//
+// Transformations
+//
+// Reference:
+// * https://developer.mozilla.org/en-US/docs/Web/CSS/transform
+// * http://dev.w3.org/csswg/css-transforms/#transform
+@mixin transform($arguments...) {
+    @if not $use-autoprefixer {
+        -webkit-transform: $arguments;
+        -moz-transform: $arguments;
+        -o-transform: $arguments;
+    }
+    transform: $arguments;
+}
+
+// Known issue:
+// Not supported for IE, Opera 14-
+@mixin transform-style($style) {
+    @if not $use-autoprefixer {
+        -webkit-transform-style: $style;
+        -moz-transform-style: $style;
+        -o-transform-style: $style;
+    }
+    transform-style: $style;
+}
+
+//
+// Known issue:
+// Triple value grammar not supported for Opera 14-
+@mixin transform-origin($origin) {
+    @if not $use-autoprefixer {
+        -webkit-transform-origin: $origin;
+        -moz-transform-origin: $origin;
+        -o-transform-origin: $origin;
+    }
+    transform-origin: $origin;
+}
+
+//
+// Known issue:
+// Not supported for IE9, Opera 14-
+@mixin backface-visibility($visibility) {
+    @if not $use-autoprefixer {
+        -webkit-backface-visibility: $visibility;
+        -moz-backface-visibility: $visibility;
+        -o-backface-visibility: $visibility;
+    }
+    backface-visibility: $visibility;
+}
+
+//
+// Known issue:
+// Not supported for IE9, Opera 14-
+@mixin perspective($d) {
+    @if($use-autoprefixer) {
+        perspective: $d;
+    }
+    @else {
+        -webkit-perspective: $d;
+        -moz-perspective: $d;
+        -o-perspective: $d;
+        perspective: $d;
+    }
+}
+
+//
+// Single transform function
+@mixin transform-single($transform-function, $rest...) {
+    @if not ($use-autoprefixer) {
+        -webkit-transform: $transform-function($rest);
+        -moz-transform: $transform-function($rest);
+        -o-transform: $transform-function($rest);
+    }
+    transform: $transform-function($rest);
+}
+
+@mixin matrix($a, $b, $c, $d, $tx, $ty) {
+    @include transform-single(matrix, $arguments);
+}
+
+@mixin translate($tx) {
+    @include transform-single(translate, $arguments);
+}
+
+@mixin translate($tx, $ty) {
+    @include transform-single(translate, $arguments);
+}
+
+@mixin translateX($tx) {
+    @include transform-single(translateX, $arguments);
+}
+
+@mixin translateY($ty) {
+    @include transform-single(translateY, $arguments);
+}
+
+@mixin scale($sx) {
+    @include transform-single(scale, $arguments);
+}
+
+@mixin scale($sx, $sy) {
+    @include transform-single(scale, $arguments);
+}
+
+@mixin scaleX($sx) {
+    @include transform-single(scaleX, $arguments);
+}
+
+@mixin scaleY($sy) {
+    @include transform-single(scaleY, $arguments);
+}
+
+@mixin rotate($angle) {
+    @include transform-single(rotate, $arguments);
+}
+
+@mixin skew($ax) {
+    @include transform-single(skew, $arguments);
+}
+
+@mixin skew($ax, $ay) {
+    @include transform-single(skew, $arguments);
+}
+
+@mixin skewX($ax) {
+    @include transform-single(skewX, $arguments);
+}
+
+@mixin skewY($ay) {
+    @include transform-single(skewY, $arguments);
+}
+
+// 3D transform  functions
+@mixin matrix3d($a1, $b1, $c1, $d1, $a2, $b2, $c2, $d2, $a3, $b3, $c3, $d3, $a4, $b4, $c4, $d4) {
+    @include transform-single(matrix3d, $arguments);
+}
+
+@mixin translate3d($tx, $ty, $tz) {
+    @include transform-single(translate3d, $arguments);
+}
+
+@mixin translateZ($tz) {
+    @include transform-single(translateZ, $arguments);
+}
+
+@mixin scale3d($sx, $sy, $sz) {
+    @include transform-single(scale3d, $arguments);
+}
+
+@mixin scaleZ($sz) {
+    @include transform-single(scaleZ, $arguments);
+}
+
+@mixin rotate3d($x, $y, $z, $angle) {
+    @include transform-single(rotate3d, $arguments);
+}
+
+@mixin rotateX($angle) {
+    @include transform-single(rotateX, $arguments);
+}
+
+@mixin rotateY($angle) {
+    @include transform-single(rotateY, $arguments);
+}
+
+@mixin rotateZ($angle) {
+    @include transform-single(rotateZ, $arguments);
+}
+
+@mixin transform-perspective($d) {
+    @include transform-single(perspective, $d);
+}
+
+//
+// CSS3 Background
+// Background clip
+// FF 3.6 and under need "padding" instead of "padding-box"
+@mixin background-clip($clips...) {
+    @if not $use-autoprefixer {
+        -webkit-background-clip: $clips;
+        -moz-background-clip: $clips;
+        -o-background-clip: $clips;
+    }
+    background-clip: $clips;
+}
+
+@mixin background-size($sizes...) {
+    @if not $use-autoprefixer {
+        -webkit-background-size: $sizes;
+        -moz-background-size: $sizes;
+        -o-background-size: $sizes;
+    }
+    background-size: $sizes;
+}
+
+@mixin background-origin($origins...) {
+    @if not $use-autoprefixer {
+        -webkit-background-origin: $origins;
+        -moz-background-origin: $origins;
+        -o-background-origin: $origins;
+    }
+    background-origin: $origins;
+}
+
+//
+// Gradients
+// General linear-gradient
+// 参考https://github.com/myakura/tillandsia/blob/master/_linear-gradient.scss
+@mixin linear-gradient($direction, $color-stops...) {
+    $type_direction: type-of($direction);
+    $veryfirst: nth($direction, 1);
+    $type_veryfirst: type-of($veryfirst);
+    // $veryfirst=='to' 标准的
+    @if $type_direction=='list' or $type_direction=='string' {
+        $standard_keywords: to bottom, to left, to top, to right, to top left, to top right, to bottom right, to bottom left, to left top, to right top, to right bottom, to left bottom;
+        $legacy_keywords: top, right, bottom, left, bottom right, bottom left, top left, top right, right bottom, left bottom, left top, right top;
+        $idx: 0;
+        @if $veryfirst=='to' {
+            // 标准的写法
+            $idx: index($standard_keywords, $direction);
+        }
+        @else {
+            // 老的写法
+            $idx: index($legacy_keywords, $direction);
+        }
+        // if a valid keyword(s) passed
+        @if $idx >=1 {
+            // 标准的direction
+            $stand_direction: nth($standard_keywords, $idx);
+            // 老的direction
+            $legacy_direction: nth($legacy_keywords, $idx);
+            @if not $use-autoprefixer {
+                background-image: -webkit-linear-gradient(($legacy_direction, $color-stops)); // Chrome 10+
+                background-image: -moz-linear-gradient(($legacy_direction, $color-stops)); // Firefox 3.6+
+                background-image: -moz-linear-gradient(($stand_direction, $color-stops)); // Firefox 10+
+                background-image: -o-linear-gradient(($stand_direction, $color-stops)); // Opera 11.10+    
+            }
+            background-image: linear-gradient(($stand_direction, $color-stops));
+        }
+        @else {
+            // @error 'passed direction is not a valid parameter: #{$direction}';
+        }
+    }
+    @else if $type_direction=='number' and unit($veryfirst)=='deg' {
+        $legacy_direction: ($direction + 450) % 360;
+        @if not $use-autoprefixer {
+            background-image: -webkit-linear-gradient(($legacy_direction, $color-stops)); // Chrome 10+
+            background-image: -moz-linear-gradient(($legacy_direction, $color-stops)); // Firefox 3.6+
+            background-image: -o-linear-gradient(($legacy_direction, $color-stops)); // Opera 11.10+
+        }
+        background-image: linear-gradient(($direction, $color-stops));
+    }
+    background-repeat: repeat;
+}
+
+// Horizontal gradient with better browser compatibility
+@mixin horizontal-gradient($start-color, $end-color) {
+    @if not ($use-autoprefixer) {
+        background-image: -webkit-gradient(linear, left top, right top, from($start-color), to($end-color)); // Safari 4+, Chrome 2+
+        background-image: -webkit-linear-gradient(left, $start-color, $end-color); // Safari 5.1+, Chrome 10+
+        background-image: -moz-linear-gradient(left, $start-color, $end-color); // FF 3.6+
+        background-image: -o-linear-gradient(left, $start-color, $end-color); // Opera 11.10+
+    }
+    @if ($support-ie-version < 10) {
+        $start-color-ie: argb($start-color);
+        $end-color-ie: argb($end-color);
+        filter: progid:DXImageTransform.Microsoft.Gradient(startColorstr=#{$start-color-ie}, endColorstr=#{$end-color-ie}, GradientType=1); // IE9 and down
+    }
+    background-image: linear-gradient(to right, $start-color, $end-color); // Standard, IE10
+    background-repeat: repeat-x;
+}
+
+// Vertical gradient with better browser compatibility
+@mixin vertical-gradient($start-color, $end-color) {
+    @if not ($use-autoprefixer) {
+        background-image: -webkit-gradient(linear, left top, left bottom, from($start-color), to($end-color)); // Safari 4+, Chrome 2+
+        background-image: -webkit-linear-gradient(top, $start-color, $end-color); // Safari 5.1+, Chrome 10+
+        background-image: -moz-linear-gradient(top, $start-color, $end-color); // FF 3.6+
+        background-image: -o-linear-gradient(top, $start-color, $end-color); // Opera 11.10+
+    }
+    @if ($support-ie-version < 10) {
+        $start-color-ie: argb($start-color);
+        $end-color-ie: argb($end-color);
+        filter: progid:DXImageTransform.Microsoft.Gradient(startColorstr=#{$start-color-ie}, endColorstr=#{$end-color-ie}, GradientType=0); // IE9 and down
+    }
+    background-image: linear-gradient(to bottom, $start-color, $end-color); // Standard, IE10
+    background-repeat: repeat-x;
+}
+// @temp 请回来再确认一下
+@mixin repeating-linear-gradient($direction, $color-stops...){
+    $type_direction: type-of($direction);
+    $veryfirst: nth($direction, 1);
+    $type_veryfirst: type-of($veryfirst);
+    // $veryfirst=='to' 标准的
+    @if $type_direction=='list' or $type_direction=='string' {
+        // which direction?
+        $standard_keywords: to bottom, to left, to top, to right, to top left, to top right, to bottom right, to bottom left, to left top, to right top, to right bottom, to left bottom;
+        $legacy_keywords: top, right, bottom, left, bottom right, bottom left, top left, top right, right bottom, left bottom, left top, right top;
+        $idx: 0;
+        @if $veryfirst=='to' {
+            // 标准的写法
+            $idx: index($standard_keywords, $direction);
+        }
+        @else {
+            // 老的写法
+            $idx: index($legacy_keywords, $direction);
+        }
+        // if a valid keyword(s) passed
+        @if $idx >=1 {
+            // 标准的direction
+            $stand_direction: nth($standard_keywords, $idx);
+            // 老的direction
+            $legacy_direction: nth($legacy_keywords, $idx);
+            @if not $use-autoprefixer {
+                background-image: -webkit-repeating-linear-gradient(($legacy_direction, $color-stops)); // Chrome 10+
+                background-image: -moz-repeating-linear-gradient(($legacy_direction, $color-stops)); // Firefox 3.6+
+                background-image: -moz-repeating-linear-gradient(($stand_direction, $color-stops)); // Firefox 10+
+                background-image: -o-repeating-linear-gradient(($stand_direction, $color-stops)); // Opera 11.10+    
+            }
+            background-image: repeating-linear-gradient(($stand_direction, $color-stops));
+        }
+        @else {
+            // @error 'passed direction is not a valid parameter: #{$direction}';
+        }
+    }
+    @else if $type_direction=='number' and unit($veryfirst)=='deg' {
+        $legacy_direction: ($direction + 450) % 360;
+        @if not $use-autoprefixer {
+            background-image: -webkit-repeating-linear-gradient(($legacy_direction, $color-stops)); // Chrome 10+
+            background-image: -moz-repeating-linear-gradient(($legacy_direction, $color-stops)); // Firefox 3.6+
+            background-image: -o-repeating-linear-gradient(($legacy_direction, $color-stops)); // Opera 11.10+
+        }
+        background-image: repeating-linear-gradient(($direction, $color-stops));
+    }
+}
+// General radial gradient (without size in specific dimensions)
+// @temp 再回来确认
+@mixin radial-gradient($shape, $color-stops...){
+    @if not $use-autoprefixer{
+        background-image: -webkit-radial-gradient($shape, $color-stops); // Chrome 10+
+             background-image: -moz-radial-gradient($shape, $color-stops); // Firefox 3.6+
+             background-image: -o-radial-gradient($shape, $color-stops); // Opera 11.60+
+    }
+    background-image: radial-gradient($shape, $color-stops);
+}
+// General repeating radial gradient (without size in specific dimensions)
+// @temp 再回来确认
+@mixin repeating-radial-gradient($shape, $color-stops...){
+    @if not $use-autoprefixer{
+        background-image: -webkit-repeating-radial-gradient($shape, $color-stops); // Chrome 10+
+             background-image: -moz-repeating-radial-gradient($shape, $color-stops); // Firefox 3.6+
+             background-image: -o-repeating-radial-gradient($shape, $color-stops); // Opera 11.60+
+    }
+    background-image: radial-repeating-gradient($shape, $color-stops);
+}
+
+
+// Extended display property values
+@mixin display($display) {
+    @if($display==flex) {
+        @if not ($use-autoprefixer) {
+            display: -webkit-flex;
+            display: -ms-flexbox;
+        }
+        display: flex;
+    }
+    @else if($display==inline-flex) {
+        @if not ($use-autoprefixer) {
+            display: -webkit-inline-flex;
+            display: -ms-inline-flexbox;
+        }
+        display: inline-flex;
+    }
+    @else if($display==box) {
+        display: -webkit-box;
+        display: -moz-box;
+    }
+    @else if($display==inline-box) {
+        display: -webkit-inline-box;
+        display: -moz-inline-box;
+    }
+    @else {
+        display: $display;
+    }
+}
+
+//
+// Flexible Box Layout
+//
+// IE 10 support: http://msdn.microsoft.com/en-us/library/ie/hh673531%28v=vs.85%29.aspx
+// IE 11 update: http://msdn.microsoft.com/en-us/library/ie/dn265027%28v=vs.85%29.aspx
+@mixin flex-direction($direction) {
+    @if not ($use-autoprefixer) {
+        -webkit-flex-direction: $direction;
+        -ms-flex-direction: $direction;
+    }
+    flex-direction: $direction;
+}
+
+@mixin flex-wrap($wrap) {
+    @if not ($use-autoprefixer) {
+        -webkit-flex-wrap: $wrap;
+        -ms-flex-wrap: $wrap;
+    }
+    flex-wrap: $wrap;
+}
+
+@mixin flex-flow($flow) {
+    @if not ($use-autoprefixer) {
+        -webkit-flex-flow: $flow;
+        -ms-flex-flow: $flow;
+    }
+    flex-flow: $flow;
+}
+
+@mixin order($order) {
+    @if not ($use-autoprefixer) {
+        -ms-flex-order: $order;
+        -webkit-order: $order;
+    }
+    order: $order;
+}
+
+@mixin flex($flex) {
+    @if not ($use-autoprefixer) {
+        -webkit-flex: $flex;
+        -ms-flex: $flex;
+    }
+    flex: $flex;
+}
+
+@mixin flex-grow($flex) {
+    @if not ($use-autoprefixer) {
+        -webkit-flex-grow: $flex;
+        -ms-flex-positive: $flex;
+    }
+    flex-grow: $flex;
+}
+
+@mixin flex-shrink($flex) {
+    @if not ($use-autoprefixer) {
+        -webkit-flex-shrink: $flex;
+        -ms-flex-negative: $flex;
+    }
+    flex-shrink: $flex;
+}
+
+@mixin flex-basis($size) {
+    @if not ($use-autoprefixer) {
+        -webkit-flex-basis: $size;
+        -ms-flex-basis: $size;
+    }
+    flex-basis: $size;
+}
+
+@mixin justify-content($align) {
+    @if not ($use-autoprefixer) {
+        $flex-pack: $align;
+        -ms-flex-pack: $flex-pack;
+        -webkit-justify-content: $align;
+    }
+    justify-content: $align;
+}
+
+@mixin align-items($align) {
+    @if not ($use-autoprefixer) {
+        $flex-align: $align;
+        -ms-flex-align: $flex-align;
+        -webkit-align-items: $align;
+    }
+    align-items: $align;
+}
+
+@mixin align-self($align) {
+    @if not ($use-autoprefixer) {
+        $flex-align: $align;
+        -ms-flex-self: $flex-align;
+        -webkit-align-self: $align;
+    }
+    align-self: $align;
+}
+
+@mixin align-content($align) {
+    @if not ($use-autoprefixer) {
+        $flex-line-pack: $align;
+        -ms-flex-content: $flex-line-pack;
+        -webkit-align-content: $align;
+    }
+    align-content: $align;
+}
+
+//
+// Old Flexible Box Layout
+// not affected by `@use-autoprefixer` because Autoprefixer doesn't deal with `box-*` syntax.
+@mixin box-orient($orient) {
+    -webkit-box-orient: $orient;
+    -moz-box-orient: $orient;
+}
+
+@mixin box-direction($direction) {
+    -webkit-box-direction: $direction;
+    -moz-box-direction: $direction;
+}
+
+@mixin box-ordinal-group($group) {
+    -webkit-box-ordinal-group: $group;
+    -moz-box-ordinal-group: $group;
+}
+
+@mixin box-flex-group($group) {
+    -webkit-box-flex-group: $group;
+    -moz-box-flex-group: $group;
+}
+
+@mixin box-flex($flex) {
+    -webkit-box-flex: $flex;
+    -moz-box-flex: $flex;
+}
+
+@mixin box-align($align) {
+    -webkit-box-align: $align;
+    -moz-box-align: $align;
+}
+
+@mixin box-pack($align) {
+    -webkit-box-pack: $align;
+    -moz-box-pack: $align;
+}
+
+// box-lines are omitted because no browser did implement it

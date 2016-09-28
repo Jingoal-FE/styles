@@ -1,0 +1,250 @@
+//
+// Layout
+// -----------------------------------------------------------------------------
+//
+// ### Usage:
+// Basic page layout paradigms.
+//
+@import "variables.scss";
+@import "compatibility.scss";
+@import "util.scss";
+//
+// ## fixed header with specified height
+//
+// ### Example:
+//
+// #page {
+//     @include layout-fixed-header(90px);
+// }
+@mixin layout-fixed-header($height, $header-selector: ".header", $body-selector: ".body") {
+    & > #{$header-selector} {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: $header-z-index;
+        height: $height;
+    }
+    & > #{$body-selector} {
+        margin-top: $height;
+        @include clearfix(); // prevents margin collapse
+    }
+}
+
+//
+// ## fixed footer with specified height
+//
+// ### Example:
+//
+// #page {
+//     @include layout-fixed-footer(90px);
+// }
+@mixin layout-fixed-footer($height, $body-selector: ".body", $footer-selector: ".footer") {
+    & > #{$body-selector} {
+        margin-bottom: $height;
+        @include clearfix();
+    }
+    & > #{$footer-selector} {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        z-index: $footer-z-index;
+        height: $height;
+    }
+}
+
+//
+// ## Sticky footer with specified height
+// Footer sticks to bottom of viewport when content is shorter than viewport height.
+// When content is higher than viewport height, shows below the content.
+//
+// Note: Works with `html, body { height: 100%; }`.
+// Doesn't work when `.layout-fixed-header()` or `.layout-fixed-footer()` is applied.
+//
+// ### Example:
+//
+// #page {
+//     @include layout-sticky-footer(90px);
+// }
+@mixin layout-sticky-footer($height, $body-selector: '.body', $footer-selector: '.footer', $footer-placeholder-selector: '.footer-placeholder') {
+    & > #{$body-selector} {
+        min-height: 100%;
+        margin-bottom: -$height;
+        @include clearfix();
+        @if($support-ie-version >=8) {
+            &:after {
+                content: "";
+                display: block;
+                height: $height;
+            }
+        }
+        @else {
+            #{$footer-placeholder-selector} {
+                display: block;
+                height: $height;
+            }
+        }
+    }
+    & > #{$footer-selector} {
+        height: $height;
+    }
+}
+
+//
+// ## Centered layout with specified width
+// ### Known issue:
+// Under IE's quirks mode, the parent element's `text-align` should be set to `center` and be reset to `left` on current element.
+@mixin layout-page($page-width) {
+    width: $page-width;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+//
+// ## Sidebar with specified width
+// One optional sidebar with given width on each side and the main section take all of the rest width.
+//
+@mixin layout-sidebar($direction, $sidebar-width, $main-selector: ".main", $sidebar-selector: ".sidebar") {
+    position: relative;
+    & > #{$main-selector} {
+        overflow: hidden;
+        margin-#{$direction}: $sidebar-width;
+    }
+    & > #{$sidebar-selector} {
+        position: absolute;
+        top: 0;
+        #{$direction}: 0;
+        width: $sidebar-width;
+    }
+}
+
+// 圣杯布局即三列布局
+@mixin layout-holy-grail($sidebar-primary-width, $sidebar-secondary-width, $main-selector: ".main", $primary-selector: ".sidebar-primary", $secondary-selector: ".sidebar-secondary") {
+    position: relative;
+    &>#{$main-selector} {
+        overflow: hidden;
+        margin-right: $sidebar-secondary-width;
+        margin-left: $sidebar-primary-width;
+    }
+    &>#{$primary-selector} {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: $sidebar-primary-width;
+    }
+    &>#{$secondary-selector} {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: $sidebar-secondary-width;
+    }
+}
+
+// ## Popup layout
+// Can align a popup element with unknown size to the top/right/bottom/left side or center of an absolutely positioned element.
+//
+@mixin layout-popup($position, $overlay-opacity: 0, $popup-selector: ".popup", $valign-ghost-selector: ".valign-ghost") {
+    position: fixed;
+    z-index: $modal-z-index;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    letter-spacing: -0.5em;
+    $vertical-align: middle;
+    $text-align: center;
+    @if $position==left or $position==center or $position==right {
+        $text-align: $position;
+        $vertical-align: middle;
+    }
+    @else if $position==top or $position==bottom {
+        $vertical-align: $position;
+        $text-align: center;
+    }
+    @if $overlay-opacity==0 {
+        pointer-events: none;
+        & > #{$popup-selector} {
+            pointer-events: all;
+        }
+    }
+    @else if($overlay-opacity > 0) {
+        @include rgba-background(#000, $overlay-opacity);
+    }
+    text-align: $text-align;
+    @if $support-ie-version < 8 {
+        #{$valign-ghost-selector} {
+            display: inline-block;
+            height: 100%;
+            vertical-align: $-verticalalign;
+        }
+    }
+    @else {
+        &:before {
+            content: '';
+            display: inline-block;
+            height: 100%;
+            vertical-align: $vertical-align;
+        }
+    }
+    &>#{$popup-selector} {
+        display: inline-block;
+        vertical-align: $vertical-align;
+    }
+}
+
+//
+// # Horizontal lists
+//
+// Turn lists into horizontal layout for menus or so
+// Should apply to the wrapper outside a list
+@mixin layout-horizontal-list($gap, $direction: left) {
+    @include clearfix();
+    overflow: hidden;
+    ul,
+    ol {
+        list-style: none;
+        float: $direction;
+        margin-#{$direction}: -$gap;
+        li {
+            float: left;
+            margin-#{$direction}: $gap;
+        }
+    }
+    @if $support-ie-version < 7 {
+        ul,
+        ol,
+        li {
+            _display: inline;
+        }
+    }
+}
+
+//
+// ## Fixed ratio layout
+// Ensure fixed aspect ratio for videos/flashs/images/iframes with fluid width
+//
+// Can have a fixed additional height (for video controls or so)
+// Should apply to the wrapper outside the content (`object`/`embed`/`iframe`/`img` or the given selector)
+//
+// http://css-tricks.com/NetMag/FluidWidthVideo/Article-FluidWidthVideo.php
+//
+// Known issue:
+// Due to [less.js#1421](https://github.com/less/less.js/issues/1421), `@target-selector` cannot contain `&` or `,`.
+@mixin layout-fluid-fixed-ratio( $width, $height, $extraHeight: 0, $target-selector: ".fixed-ratio") {
+    position: relative;
+    padding-bottom: $height / $width * 100%;
+    padding-top: $extraHeight;
+    height: 0;
+    object,
+    embed,
+    iframe,
+    img,
+    #{$target-selector} {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+}

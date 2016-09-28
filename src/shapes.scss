@@ -1,0 +1,107 @@
+//
+// Shapes
+// -----------------------------------------------------------------------------
+//
+// ### Usage:
+// 提供常见形状的生成。
+@import "variables.scss";
+@import "util.scss";
+@mixin triangle($direction, $size, $color, $origin: corner) {
+    position: absolute;
+    @include size(0);
+    $horizontal: false;
+    $vertical: false;
+    @if index($direction, left) or index($direction, right) {
+        $index_1: index($direction, left);
+        $index_2: index($direction, right);
+        @if $index_1 > $index_2 {
+            $horizontal: right;
+        }
+        @else {
+            $horizontal: left;
+        }
+    }
+    @if index($direction, top) or index($direction, bottom) {
+        $index_1: index($direction, top);
+        $index_2: index($direction, bottom);
+        @if $index_1 > $index_2 {
+            $vertical: bottom;
+        }
+        @else {
+            $vertical: top;
+        }
+    }
+    @if not $horizontal==false and not $vertical==false {
+        border: $size/2 solid $color;
+        $opposite_h: opposite-direction($horizontal);
+        $opposite_v: opposite-direction($vertical);
+        border-#{opposite_h}-color: transparent;
+        border-#{opposite_v}-color: transparent;
+        @if($support-ie-version < 7) {
+            _border-#{opposite_h}-style: dashed;
+            _border-#{opposite_v}-style: dashed;
+        }
+        @if $origin==side {
+            margin-left: -$size / 2;
+            margin-top: -$size / 2;
+        }
+        @else if($origin==corner) {
+            @if $horizontal==right {
+                margin-left: -$size;
+            }
+            @if $vertical==bottom {
+                margin-top: -$size;
+            }
+        }
+    }
+    @if $horizontal==false and $vertical==false {
+        $border-width: $size / sqrt(2);
+        border: $border-width solid transparent;
+        @if($support-ie-version < 7) {
+            _border-style: dashed;
+            _border-#{$opposite_direction}-style: solid;
+        }
+        $opposite_direction: opposite-direction($direction);
+        border-#{$opposite_direction}-color: $color;
+        @if $origin==corner {
+            margin-left: -$border-width / 2;
+            margin-top: -$border-width / 2;
+        }
+        @else if($origin==side) {
+            @if not $vertical==false {
+                margin-left: -$border-width;
+            }
+            @if $horizontal==left {
+                margin-left: -$border-width * 2;
+            }
+            @if not $horizontal==false {
+                margin-top: -$border-width;
+            }
+            @if $vertical==top {
+                margin-top: -$border-width * 2;
+            }
+        }
+    }
+    @if $support-ie-version < 7 {
+        _font-size: 0;
+        _line-height: 0;
+    }
+}
+
+@mixin circle($size, $bg: false) {
+    @if index($size, px) {
+        @include size($size);
+        @include border-radius(ceil($size/2));
+    }
+    @else if index($size, '%') {
+        width: $size;
+        padding-top: $size;
+        @include border-radius(50%);
+    }
+    @else if($size==0) {
+        @include size(0);
+    }
+    @if $bg {
+        background: $bg;
+    }
+}

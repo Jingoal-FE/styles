@@ -1,0 +1,102 @@
+//
+// Clockhand
+// -----------------------------------------------------------------------------
+//
+// ### Usage:
+// Helpers for writing properties in clockhand manner.
+@mixin clockhand($values, $prefix:false, $suffix:false, $collapse:false) {
+    $len: length($values);
+    $pre: $prefix;
+    $suf: $suffix;
+
+    @if($prefix) {
+        $pre: '#{$prefix}-';
+    }
+    @else {
+        $pre: '';
+    }
+
+    @if($suffix) {
+        $suf: '-#{$suffix}';
+    }
+    @else {
+        $suf: '';
+    }
+
+    $top: nth($values,1);
+    $right: $top;
+    $bottom: $top;
+    $left:$top;
+
+    @if($len == 2){
+        $right: nth($values,2);
+        $left: $right;
+    }
+    @else if($len == 3){
+        $right: nth($values, 2);
+        $bottom: nth($values, 3);
+    }
+    @else if($len == 4){
+        $right: nth($values, 2);
+        $bottom: nth($values, 3);
+        $left: nth($values, 4);
+    }
+        
+    @if not ($top == _){
+        #{$pre}top#{$suf}: $top;
+    }
+    @if not ($right == _){
+        #{$pre}right#{$suf}: $right;
+    }
+    @if not ($bottom == _){
+        #{$pre}bottom#{$suf}: $bottom;
+    }
+    @if not ($left == _){
+        #{$pre}left#{$suf}: $left;
+    }
+
+    @if($collapse)
+        and not ($top == _) 
+        and not ($right == _) 
+        and not ($bottom == _) 
+        and not ($left == _){
+        $shorthand:$top;
+        @if not ($right == $top){
+            $shorthand: $top $right;
+        }
+        @if not ($bottom == $top){
+            $shorthand: $top $right $bottom;
+        }
+        @if not ($right == $left){
+            $shorthand: $top $right $bottom $left;
+        }
+        #{$prefix}#{suf}:$shorthand;
+    }
+}
+@mixin absolute($arguments...){
+    position: absolute;
+    @include clockhand($arguments);
+}
+@mixin fixed($arguments...) {
+    position: fixed;
+    @include clockhand($arguments);
+}
+@mixin relative($arguments...) {
+    position: relative;
+    @include clockhand($arguments);
+}
+@mixin padding($arguments...) {
+    @include clockhand($arguments, padding, null, true);
+}
+@mixin margin($arguments...) {
+    @include clockhand($arguments, margin, null, true);
+}
+@mixin border-color($arguments...) {
+    @include clockhand($arguments, border, color, true);
+}
+@mixin border-style($arguments...) {
+    @include clockhand($arguments, border, style, true);
+}
+@mixin border-width($arguments...) {
+    @include clockhand($arguments, border, width, true);
+}

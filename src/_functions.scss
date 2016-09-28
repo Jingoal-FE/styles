@@ -1,0 +1,156 @@
+//
+// Functions
+// -----------------------------------------------------------------------------
+// 转sass过程中需要用到的functions
+//
+
+// Set a default value if the given arglist is empty
+@function set-arglist-default($arglist, $default) {
+    $default-index: index($arglist, default);
+    @if $default-index {
+        $arglist: set-nth($arglist, $default-index, $default)
+    }
+    @return if(length($arglist) > 0, $arglist, $default);
+}
+
+// coerce a list to be comma delimited or make a new, empty comma delimited list.
+@function comma-list($list: ()) {
+    @return join((), $list, comma);
+}
+
+// ### transition
+$transitionable-prefixed-values: transform,
+transform-origin !default;
+@function transition-map($transition) {
+    $transition-map: ();
+    @each $item in $transition {
+        @if is-time($item) {
+            @if map-has-key($transition-map, duration) {
+                $transition-map: map-merge($transition-map, (delay: $item));
+            }
+            @else {
+                $transition-map: map-merge($transition-map, (duration: $item));
+            }
+        }
+        @else if map-has-key($transition-map, property) {
+            $transition-map: map-merge($transition-map, (timing-function: $item));
+        }
+        @else {
+            $transition-map: map-merge($transition-map, (property: $item));
+        }
+    }
+    @return $transition-map;
+}
+
+@function prefixed-for-transition($prefix, $property) {
+    @if not $prefix {
+        @return $property;
+    }
+    @if type-of($property)==list or type-of($property)==arglist {
+        $new-list: comma-list();
+        @each $v in $property {
+            $new-list: append($new-list, prefixed-for-transition($prefix, $v));
+        }
+        @return $new-list;
+    }
+    @else {
+        @if index($transitionable-prefixed-values, $property) {
+            @return #{$prefix}-#{$property};
+        }
+        @else {
+            @return $property;
+        }
+    }
+}
+
+// ###  end transition 
+// coerce a list to be comma delimited or make a new, empty comma delimited list.
+@function comma-list($list: ()) {
+    @return join((), $list, comma);
+}
+
+// 去掉一个值的单位，如12px => 12
+// eg. strip-unit(12px) => 12
+@function strip-unit($number) {
+    @return $number / ($number * 0 + 1);
+}
+
+// Work out the column widths based on the ratio and gutter sizes.
+// @access private
+// @param {Number} $ratios [1] - The column ratio of the element.
+// @param {Number} $gutter [$grid-gutter] - The gutter for the column.
+// @returns {List} $width $gutter - A list containing the with and gutter for the element.
+@function grid-get-column($ratios: 1, $gutter: $grid-gutter) {
+    $ratios: if(not $grid-parent-first, grid-reverse($ratios), $ratios);
+    $width: 100;
+    @each $ratio in $ratios {
+        $gutter: $gutter / $width * 100;
+        $width: 100 * $ratio - $gutter + $ratio * $gutter;
+    }
+    @return $width $gutter;
+}
+
+// Perform a value into a percentage value.
+// @access private
+// @param {Number} $value - The value which should be converted.
+// @returns {Number} $value - The percentage.
+@function grid-get-percentage($value) {
+    @if $value==0 {
+        @return 0;
+    }
+    @else {
+        @return $value * 1%;
+    }
+}
+
+// Reverse a list (progressively enhanced for Sass 3.3).
+// @access private
+// @param {List} $list - The list of values you want to reverse.
+// @returns {List} $result - The reversed list.
+@function grid-reverse($list) {
+    // Sass 3.2
+    @if function-exists("set-nth") !=true {
+        $result: ();
+        @for $i from length($list) * -1 through -1 {
+            $item: nth($list, abs($i));
+            @if length($item) > 1 and $recursive {
+                $result: append($result, grid-reverse($item, $recursive));
+            }
+            @else {
+                $result: append($result, $item);
+            }
+        }
+        @return $result;
+    }
+    // Sass 3.3+
+    @for $i from 1 through ceil(length($list)/2) {
+        $tmp: nth($list, $i);
+        $tmp: if(length($tmp) > 1 and $recursive, reverse($tmp, $recursive), $tmp);
+        $list: set-nth($list, $i, nth($list, -$i));
+        $list: set-nth($list, -$i, $tmp);
+    }
+    @return $list;
+}
+// Get the opposite direction to a given value.
+// @access private
+// @param {String} $dir - The direction you want the opposite of.
+// @returns {String} - The opposite direction to $dir.
+// @throw Error if an incorrect string for position is provided.
+@function opposite-direction($direction) {
+  @if $direction == "left" {
+    @return right;
+  } @else if $direction == "right" {
+    @return left;
+  } @else if $direction == "top" {
+    @return bottom;
+  } @else if $direction == "bottom" {
+    @return top;
+  } @else if index("ltr" "LTR", $direction) {
+    @return rtl;
+  } @else if index("rtl" "RTL", $direction) {
+    @return ltr;
+  } @else {
+    @warn "`#{$direction}` is not a direction; please make sure your direction is all lowercase.";
+    @return false;
+  }
+}
